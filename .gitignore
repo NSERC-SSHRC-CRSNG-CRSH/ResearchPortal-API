@@ -3,3 +3,8 @@
 ################################################################################
 
 /.vs
+/packages
+/**/bin
+/**/obj
+/ResearchPortal.API/AppSettingsSecrets.config
+/NSERC_GRT_FYR2016_AWARD.csv
