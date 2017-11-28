@@ -30,87 +30,57 @@ namespace ResearchPortal.API.Tests.Controllers
             {
                 var csv = new CsvReader(fileReader);
                 csv.Configuration.RegisterClassMap<AccountMap>();
-                csv.GetRecords<Account>();
+                csv.Configuration.RegisterClassMap<FundingOpportunityMap>();
+                csv.Configuration.RegisterClassMap<FundingCycleMap>();
+                csv.Configuration.RegisterClassMap<ContactMap>();
+
+
+
+                var accounts = csv.GetRecords<Account>();
+                UpsertEntities(accounts, "rp2_code");
+
+                var contacts = csv.GetRecords<Contact>();
+                UpsertEntities(contacts);
             }
-            var organizations = new HashSet<Account>();
-            ExecuteMultipleRequest exMReq = new ExecuteMultipleRequest();
-            exMReq.Requests = new OrganizationRequestCollection();
-            exMReq.Settings = new ExecuteMultipleSettings();
-            exMReq.Settings.ReturnResponses = true;
-
-            //Cle,Name-Nom,Department-Département,FiscalYear-Exercice financier,
-            //CompetitionYear -Année de concours,AwardAmount,ProgramID,ProgramNaneEN,
-            //ProgramNameFR,GroupEN,GroupFR,CommitteeCode,CommitteeNameEN,CommitteeNameFR,
-            //AreaOfApplicationCode,AreaOfApplicationGroupEN,AreaOfApplicationGroupFR,
-            //AreaOfApplicationEN,AreaOfApplicationFR,ResearchSubjectCode,ResearchSubjectGroupEN,
-            //ResearchSubjectGroupFR,ResearchSubjectEN,ResearchSubjectFR,installment,Partie,
-            //Num_Partie,Nb_Partie,ApplicationTitle,Keyword,ApplicationSummary
-
-            #region Organizations
-            // Organization Fields:
-            //OrganizationID,Institution-Établissement,ProvinceEN,ProvinceFR,CountryEN,CountryFR,
-            var distinctOrgIds = rows.Select(r => r["OrganizationID"]?.ToString()).Distinct();
-            foreach (string orgId in distinctOrgIds)
-            {
-                var orgRow = rows.FirstOrDefault(r => r["OrganizationID"]?.ToString() == orgId);
-
-                UpsertRequest upsert = new UpsertRequest();
-                Account adminOrg = new Account("rp2_code", orgRow["OrganizationID"]);
-                adminOrg.rp2_Code = orgRow["OrganizationID"]?.ToString();
-                adminOrg.Name = orgRow["Institution-Établissement"]?.ToString();
-                adminOrg.Address1_StateOrProvince = orgRow["ProvinceEN"]?.ToString();
-                adminOrg.Address1_Country = orgRow["CountryEN"]?.ToString();
-                exMReq.Requests.Add(upsert);
-                organizations.Add(adminOrg);
-            }
-            var response = service.Execute(exMReq) as ExecuteMultipleResponse;
-            for (int i = 0; i < exMReq.Requests.Count; i++)
-            {
-                UpsertResponse upResp = response.Responses.FirstOrDefault(r => r.RequestIndex == i)?.Response as UpsertResponse;
-                (exMReq.Requests.ElementAt(i) as UpsertRequest).Target.Id = upResp.Target.Id;
-            }
-
-            #endregion
-
-            #region Funding Opportunity
-
-            #endregion
-
-            #region   Funding Cycle
-            #endregion
 
         }
 
-        protected IEnumerable<Entity> blah(HashSet<IDictionary<string, object>> rows, string distinctColumn)
+        protected void UpsertEntities(IEnumerable<Entity> entities, string distinctColumn = "")
         {
-            var entities = new HashSet<Entity>();
+            if (!string.IsNullOrEmpty(distinctColumn))
+            {
+                // TODO filter list to distinct entities 
+                var distinctIds = entities.Select(r => r[distinctColumn]?.ToString()).Distinct();
+                HashSet<Entity> filteredEntities = new HashSet<Entity>();
+                foreach (string id in distinctIds)
+                {
+                    var firstDistinct = entities.FirstOrDefault(r => r[distinctColumn]?.ToString() == id);
+                    if (firstDistinct == null)
+                    {
+                        continue;
+                    }
+                    if (firstDistinct.KeyAttributes == null)
+                    {
+                        firstDistinct.KeyAttributes = new KeyAttributeCollection();
+                    }
+                    firstDistinct.KeyAttributes[distinctColumn] = firstDistinct[distinctColumn];
+                    filteredEntities.Add(firstDistinct);
+                }
+                entities = filteredEntities;
+            }
+
             ExecuteMultipleRequest exMReq = new ExecuteMultipleRequest();
             exMReq.Requests = new OrganizationRequestCollection();
             exMReq.Settings = new ExecuteMultipleSettings();
             exMReq.Settings.ReturnResponses = true;
 
-            var distinctOrgIds = rows.Select(r => r[distinctColumn]?.ToString()).Distinct();
-            foreach (string orgId in distinctOrgIds)
+            foreach (var e in entities)
             {
-                var orgRow = rows.FirstOrDefault(r => r[distinctColumn]?.ToString() == orgId);
-
                 UpsertRequest upsert = new UpsertRequest();
-                Account adminOrg = new Account("rp2_code", orgRow["OrganizationID"]);
-                adminOrg.rp2_Code = orgRow["OrganizationID"]?.ToString();
-                adminOrg.Name = orgRow["Institution-Établissement"]?.ToString();
-                adminOrg.Address1_StateOrProvince = orgRow["ProvinceEN"]?.ToString();
-                adminOrg.Address1_Country = orgRow["CountryEN"]?.ToString();
+                upsert.Target = e;
                 exMReq.Requests.Add(upsert);
-                entities.Add(adminOrg);
             }
             var response = service.Execute(exMReq) as ExecuteMultipleResponse;
-            for (int i = 0; i < exMReq.Requests.Count; i++)
-            {
-                UpsertResponse upResp = response.Responses.FirstOrDefault(r => r.RequestIndex == i)?.Response as UpsertResponse;
-                (exMReq.Requests.ElementAt(i) as UpsertRequest).Target.Id = upResp.Target.Id;
-            }
-
-            return entities;
         }
     }
 }

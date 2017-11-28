@@ -6,5 +6,5 @@
 /packages
 /**/bin
 /**/obj
-/ResearchPortal.API/AppSettingsSecrets.config
+/**/AppSettingsSecrets.config
 /NSERC_GRT_FYR2016_AWARD.csv

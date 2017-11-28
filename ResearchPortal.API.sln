@@ -8,6 +8,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ResearchPortal.API.Tests", "ResearchPortal.API.Tests\ResearchPortal.API.Tests.csproj", "{8FA32278-8262-49B1-B14E-268E1D1052D2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A82FF6DE-59A9-4AC0-9036-B19A29E9A5A1}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ResearchPortal.Lib", "..\ResearchPortal-Web\ResearchPortal.Lib\ResearchPortal.Lib.csproj", "{BAFFE5D9-653C-4818-B68F-E5732A764DBA}"
 EndProject

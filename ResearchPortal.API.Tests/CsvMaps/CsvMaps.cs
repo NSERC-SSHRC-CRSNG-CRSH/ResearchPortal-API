@@ -42,7 +42,8 @@ namespace ReseachPortal.API
             //ResearchSubjectGroupFR,ResearchSubjectEN,ResearchSubjectFR,installment,Partie,
             //Num_Partie,Nb_Partie,ApplicationTitle,Keyword,ApplicationSummary
             Map(m => m.rp2_name).Name("ApplicationTitle");
-            Map(m => m.rp2_PrimaryApplicant.KeyAttributes["rp2_identifier"]).Name("Cle");
+            Map(m => m.rp2_Identifier).Name("ApplicationId");
+            Map(m => m.rp2_PrimaryAppilcant_Identifier).Name("Cle");
 
             // Map(m => m.).Name("Keyword");
             // Map(m => m.).Name("ApplicationSummary");
@@ -70,7 +71,7 @@ namespace ReseachPortal.API
             Map(m => m.rp2_FiscalYearDisplay).Name("FiscalYear");
             Map(m => m.rp2_CompetitionYearDisplay).Name("CompetitionYear");
             Map(m => m.rp2_CompetitionYear).Name("CompetitionYear");
-            Map(m => m.rp2_FundingOpportunity.KeyAttributes["rp2_code"]).Name("ProgramID");
+            Map(m => m.rp2_FundingOpportunity_Code).Name("ProgramID");
         }
     }
 
@@ -82,10 +83,11 @@ namespace ReseachPortal.API
         //AreaOfApplicationCode,AreaOfApplicationGroupEN,AreaOfApplicationGroupFR,
         //AreaOfApplicationEN,AreaOfApplicationFR,ResearchSubjectCode,ResearchSubjectGroupEN,
         //ResearchSubjectGroupFR,ResearchSubjectEN,ResearchSubjectFR,installment,Partie,
-        //Num_Partie,Nb_Partie,ApplicationTitle,Keyword,ApplicationSummary
+
         public Rp2AwardMap()
         {
-            Map(m => m.rp2_EndDate).Name("");
+            Map(m => m.rp2_Application_Identifier).Name("ApplicationId");
+            Map(m => m.rp2_TotalAwardedAmount).Name("AwardAmount");
            
         }
     }
