@@ -44,7 +44,7 @@ namespace ResearchPortal.API.Controllers.Casrai
         [HttpGet()]
         public IEnumerable<FundedAward> FundingAwards()
         {
-            string fetchXml = @"<fetch version='1.0' output-format='xml-platform' mapping='logical' distinct='false'>
+            string fetchXml = @"<fetch version='1.0' output-format='xml-platform' mapping='logical' distinct='false' count='100'>
 	<entity name='rp2_award'>
 		<all-attributes />
 		<order attribute='rp2_name' descending='false' />

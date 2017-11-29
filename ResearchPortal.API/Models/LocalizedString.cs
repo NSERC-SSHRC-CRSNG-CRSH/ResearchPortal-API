@@ -10,6 +10,12 @@ namespace ResearchPortal.API.Models
     [DataContract]
     public class LocalizedString
     {
+        public LocalizedString()
+        {
+            En = "";
+            Fr = "";
+        }
+
         [DataMember(Name = "en")]
         public string En { get; set; }
         [DataMember(Name = "fr")]

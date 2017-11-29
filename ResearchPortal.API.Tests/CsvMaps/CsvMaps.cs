@@ -26,8 +26,10 @@ namespace ReseachPortal.API
         public ContactMap()
         {
             // Fields:
-            Map(m => m.FullName).Name("Name-Nom");
+            Map(m => m.Last_FirstName).Name("Name-Nom");
             Map(m => m.rp2_Identifier).Name("Cle");
+            Map(m => m.Address1_StateOrProvince).Name("ProvinceEN");
+            Map(m => m.Address1_Country).Name("CountryEN");
         }
     }
 
@@ -44,6 +46,9 @@ namespace ReseachPortal.API
             Map(m => m.rp2_name).Name("ApplicationTitle");
             Map(m => m.rp2_Identifier).Name("ApplicationId");
             Map(m => m.rp2_PrimaryAppilcant_Identifier).Name("Cle");
+            Map(m => m.rp2_Organization_Code).Name("OrganizationID");
+            Map(m => m.rp2_FundingCycle_Code).Name("FCCode");
+            Map(m => m.rp2_FundingOpportunity_Code).Name("ProgramID");
 
             // Map(m => m.).Name("Keyword");
             // Map(m => m.).Name("ApplicationSummary");
@@ -72,6 +77,8 @@ namespace ReseachPortal.API
             Map(m => m.rp2_CompetitionYearDisplay).Name("CompetitionYear");
             Map(m => m.rp2_CompetitionYear).Name("CompetitionYear");
             Map(m => m.rp2_FundingOpportunity_Code).Name("ProgramID");
+            Map(m => m.rp2_Code).Name("FCCode");
+            Map(m => m.rp2_name).Name("FCCode");
         }
     }
 
@@ -86,9 +93,12 @@ namespace ReseachPortal.API
 
         public Rp2AwardMap()
         {
+            Map(m => m.rp2_Identifier).Name("ApplicationId");
+            Map(m => m.rp2_name).Name("ApplicationId");
             Map(m => m.rp2_Application_Identifier).Name("ApplicationId");
-            Map(m => m.rp2_TotalAwardedAmount).Name("AwardAmount");
-           
+            Map(m => m.rp2_TotalAwardedAmount.Value).Name("AwardAmount");
+            Map(m => m.rp2_PrimaryAwardee_Identifier).Name("Cle");
+            Map(m => m.rp2_Organization_Code).Name("OrganizationID");
         }
     }
 }

@@ -23,8 +23,6 @@ namespace ResearchPortal.API
         {
             string connectionstring = ConfigurationManager.AppSettings["rp2:ConnectionString"];
             CrmServiceClient client = new CrmServiceClient(connectionstring);
-        
-            var resp = client.Execute(new WhoAmIRequest()) as WhoAmIResponse;
             return client;
         }
     }

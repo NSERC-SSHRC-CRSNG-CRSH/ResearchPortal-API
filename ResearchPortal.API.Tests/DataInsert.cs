@@ -10,13 +10,16 @@ using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Messages;
 using ResearchPortal.Entities;
 using ReseachPortal.API;
+using System;
+using System.Text;
+using CsvHelper.Configuration;
 
 namespace ResearchPortal.API.Tests.Controllers
 {
     [TestClass]
     public class DataInsert
     {
-        IOrganizationService service = null;
+        private readonly IOrganizationService service = null;
         public DataInsert()
         {
             service = ResearchPortal.API.Startup.CreateCrmServiceClient();
@@ -24,37 +27,35 @@ namespace ResearchPortal.API.Tests.Controllers
         [TestMethod]
         public void CreateTestData()
         {
-
-            HashSet<IDictionary<string, object>> rows = new HashSet<IDictionary<string, object>>();
-            using (TextReader fileReader = File.OpenText(@"C:\Dev\RP2.0\ReseachPortal-API\NSERC_GRT_FYR2016_AWARD.csv"))
-            {
-                var csv = new CsvReader(fileReader);
-                csv.Configuration.RegisterClassMap<AccountMap>();
-                csv.Configuration.RegisterClassMap<FundingOpportunityMap>();
-                csv.Configuration.RegisterClassMap<FundingCycleMap>();
-                csv.Configuration.RegisterClassMap<ContactMap>();
-
-
-
-                var accounts = csv.GetRecords<Account>();
-                UpsertEntities(accounts, "rp2_code");
-
-                var contacts = csv.GetRecords<Contact>();
-                UpsertEntities(contacts);
-            }
+            string csvFile = @"C:\Dev\GitHub\NSERC-SSHRC\NSERC_GRT_FYR2016_AWARD.csv";
+            //UpsertEntities<AccountMap, Account>(csvFile, "rp2_code");
+            //UpsertEntities<ContactMap, Contact>(csvFile, "rp2_identifier");          
+            //UpsertEntities<FundingOpportunityMap, rp2_fundingopportunity>(csvFile, "rp2_code");
+            //UpsertEntities<FundingCycleMap, rp2_fundingcycle>(csvFile, "rp2_code");
+            //UpsertEntities<ApplicationMap, rp2_application>(csvFile, "rp2_identifier");
+            UpsertEntities<Rp2AwardMap, rp2_award>(csvFile, "rp2_identifier");
 
         }
 
-        protected void UpsertEntities(IEnumerable<Entity> entities, string distinctColumn = "")
+        protected void UpsertEntities<TMap, TEntity>(string csvFile, string distinctColumn = "") where TEntity : Entity where TMap : ClassMap<TEntity>
         {
+            IEnumerable<TEntity> entities = null;
+
+            using (var streamReader = new StreamReader(csvFile, Encoding.GetEncoding("windows-1252")))
+            {
+                var csv = new CsvReader(streamReader);
+                csv.Configuration.RegisterClassMap<TMap>();
+                entities = csv.GetRecords<TEntity>().ToList();
+            }
+
             if (!string.IsNullOrEmpty(distinctColumn))
             {
                 // TODO filter list to distinct entities 
                 var distinctIds = entities.Select(r => r[distinctColumn]?.ToString()).Distinct();
-                HashSet<Entity> filteredEntities = new HashSet<Entity>();
+                HashSet<TEntity> filteredEntities = new HashSet<TEntity>();
                 foreach (string id in distinctIds)
                 {
-                    var firstDistinct = entities.FirstOrDefault(r => r[distinctColumn]?.ToString() == id);
+                    TEntity firstDistinct = entities.FirstOrDefault(r => r[distinctColumn]?.ToString() == id).ToEntity<TEntity>();
                     if (firstDistinct == null)
                     {
                         continue;
@@ -68,19 +69,35 @@ namespace ResearchPortal.API.Tests.Controllers
                 }
                 entities = filteredEntities;
             }
+            TEntity example = entities.FirstOrDefault();
 
-            ExecuteMultipleRequest exMReq = new ExecuteMultipleRequest();
-            exMReq.Requests = new OrganizationRequestCollection();
-            exMReq.Settings = new ExecuteMultipleSettings();
-            exMReq.Settings.ReturnResponses = true;
 
-            foreach (var e in entities)
+            // split the list into sub lists with a maximum of 1000 records
+            var subLists = entities.Select((e, i) => new { Index = i, Value = e })
+               .GroupBy(x => x.Index / 1000)
+               .Select(x => x.Select(v => v.Value).ToList()).ToList();
+
+            foreach (var subEntities in subLists)
             {
-                UpsertRequest upsert = new UpsertRequest();
-                upsert.Target = e;
-                exMReq.Requests.Add(upsert);
+                ExecuteMultipleRequest exMReq = new ExecuteMultipleRequest();
+                exMReq.Requests = new OrganizationRequestCollection();
+                exMReq.Settings = new ExecuteMultipleSettings();
+                exMReq.Settings.ReturnResponses = true;
+
+                foreach (var e in subEntities)
+                {
+                    UpsertRequest upsert = new UpsertRequest();
+
+                    upsert.Target = e;
+                    exMReq.Requests.Add(upsert);
+                }
+
+                var response = service.Execute(exMReq) as ExecuteMultipleResponse;
+                if (response.IsFaulted)
+                {
+                    throw new Exception("");
+                }
             }
-            var response = service.Execute(exMReq) as ExecuteMultipleResponse;
         }
     }
 }

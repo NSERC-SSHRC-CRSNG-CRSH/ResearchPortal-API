@@ -44,6 +44,7 @@ namespace ResearchPortal.API.Models.Casrai
             PrimaryAwardee = new FundedAwardee();
             Province = new LocalizedString();
             Country = new LocalizedString();
+            ProgramName = new LocalizedString();
         }
 
         /// <summary>
